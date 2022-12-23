@@ -75,8 +75,8 @@ public class CalculateUseTime {
 
         // 요청값 테스트 72 -> 매월 마지막 날 반복 설정시 케이스
         Map<String, Object> requestMap72 = new HashMap<>();
-        requestMap72.put("startDate", "202301051530"); // 일정 시작 일자
-        requestMap72.put("endDate", "202301051530"); // 일정 종료 일자
+        requestMap72.put("startDate", "202301311530"); // 일정 시작 일자
+        requestMap72.put("endDate", "202301311530"); // 일정 종료 일자
         requestMap72.put("repeatType", "72"); // 반복 타입
         requestMap72.put("repeatByDay", ""); // 반복 요일
         requestMap72.put("repeatEndDay", "20250330");
@@ -84,8 +84,8 @@ public class CalculateUseTime {
 
         // 요청값 테스트 80 -> 매년 반복 설정시 케이스
         Map<String, Object> requestMap80 = new HashMap<>();
-        requestMap80.put("startDate", "202301051530"); // 일정 시작 일자
-        requestMap80.put("endDate", "202301051530"); // 일정 종료 일자
+        requestMap80.put("startDate", "202301311530"); // 일정 시작 일자
+        requestMap80.put("endDate", "202301311530"); // 일정 종료 일자
         requestMap80.put("repeatType", "80"); // 반복 타입
         requestMap80.put("repeatByDay", ""); // 반복 요일
         requestMap80.put("repeatEndDay", "20250330");
@@ -313,8 +313,7 @@ public class CalculateUseTime {
                 break;
             // 매월 X일 반복
             case "70":
-                // returnData = everyMonthXDayCalculate(request);
-                returnData = everyMonthXDayCalculateV2(request);
+                returnData = everyMonthXDayCalculate(request);
                 break;
             // 매월 마지막 X요일
             case "71":
@@ -334,7 +333,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : 매일 (20)
+     * repeatType : 매일 (20) (o)
      * 2022.12.19 서보인 작성
      *
      * @param request
@@ -358,7 +357,7 @@ public class CalculateUseTime {
         }
 
         // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
-        for (LocalDate i = startLocalDate; (i.isBefore(repeatEndLocalDate) || i.isEqual(repeatEndLocalDate)); i = i.plusDays(1)) {
+        for (LocalDate i = startLocalDate; (!i.isAfter(repeatEndLocalDate)); i = i.plusDays(1)) {
             repeatDateList.add(i);
             // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
             if (repeatDateList.size() == 30) {
@@ -625,7 +624,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : (70) 매월 X일 반복
+     * repeatType : (70) 매월 X일 반복 (o)
      * 2022.12.20 서보인 작성
      *
      * @param request
@@ -640,43 +639,6 @@ public class CalculateUseTime {
         LocalDate cloneStartLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         LocalDate repeatEndLocalDate = LocalDate.parse(String.valueOf(ldtData.get("repeatLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        // callResult 메소드 파라미터에 사용할 변수 선언
-        List<LocalDate> thirtyDateList = new ArrayList<>();
-        List<LocalDate> repeatDateList = new ArrayList<>();
-
-        // 일자 계산
-        int dayOfMonth = startLocalDate.getDayOfMonth();
-
-        // 1번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지 더해야함 -> 무조건 30번을 돌아야함
-        for (LocalDate i = startLocalDate; i.isBefore(startLocalDate.plusMonths(30)); i = i.plusMonths(1)) {
-            // 매월 x일
-            LocalDate xDay = i.withDayOfMonth(dayOfMonth);
-            thirtyDateList.add(xDay);
-        }
-
-        // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
-        for (LocalDate i = startLocalDate; (i.isBefore(repeatEndLocalDate) || i.isEqual(repeatEndLocalDate)); i = i.plusMonths(1)) {
-            repeatDateList.add(i.withDayOfMonth(dayOfMonth));
-            // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-            if (repeatDateList.size() == 30) {
-                break;
-            }
-        }
-
-        // return
-        return callResult(thirtyDateList, repeatDateList);
-    }
-
-    public static Map<String, Object> everyMonthXDayCalculateV2(Map<String, Object> request) {
-        // 공통으로 사용할 requestConvertLdt 메소드 호출
-        Map<String, Object> ldtData = requestConvertLdt(request);
-
-        // ldtData -> key 값을 통해 각 변수에 데이터 할당
-        LocalDate startLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        LocalDate cloneStartLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        LocalDate repeatEndLocalDate = LocalDate.parse(String.valueOf(ldtData.get("repeatLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        // test
-        System.out.println("repeatEndLocalDate = " + repeatEndLocalDate);
         // callResult 메소드 파라미터에 사용할 변수 선언
         List<LocalDate> thirtyDateList = new ArrayList<>();
         List<LocalDate> repeatDateList = new ArrayList<>();
@@ -734,7 +696,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : 매월 마지막 주 X요일 (71)
+     * repeatType : 매월 마지막 주 X요일 (71) (22.12.23 진행중)
      * 2022.12.19 서보인 작성
      *
      * @param request
@@ -746,6 +708,7 @@ public class CalculateUseTime {
 
         // ldtData -> key 값을 통해 각 변수에 데이터 할당
         LocalDate startLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate cloneStartLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         LocalDate repeatEndLocalDate = LocalDate.parse(String.valueOf(ldtData.get("repeatLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         // 요청값의 시작날짜가 무슨 요일인지 확인
@@ -754,6 +717,11 @@ public class CalculateUseTime {
         // callResult 메소드 파라미터에 사용할 변수 선언
         List<LocalDate> thirtyDateList = new ArrayList<>();
         List<LocalDate> repeatDateList = new ArrayList<>();
+
+         // 매월 마지막 주 X요일 변수 할당 (재활용을 위해 , 선언)
+        LocalDate everyMonthLastWeekXDay = null;
+
+        // TODO -> while문 및 (마지막 주 + 요일 )
 
         // 1번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지 더해야함 -> 무조건 30번을 돌아야함
         for (LocalDate i = startLocalDate; i.isBefore(startLocalDate.plusMonths(30)); i = i.plusMonths(1)) {
@@ -774,7 +742,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : 매월 마지막 날 (72)
+     * repeatType : 매월 마지막 날 (72) (o)
      * 2022.12.19 서보인 작성
      *
      * @param request
@@ -786,24 +754,47 @@ public class CalculateUseTime {
 
         // ldtData -> key 값을 통해 각 변수에 데이터 할당
         LocalDate startLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate cloneStartLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         LocalDate repeatEndLocalDate = LocalDate.parse(String.valueOf(ldtData.get("repeatLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         // callResult 메소드 파라미터에 사용할 변수 선언
         List<LocalDate> thirtyDateList = new ArrayList<>();
         List<LocalDate> repeatDateList = new ArrayList<>();
 
-        // 1번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지 더해야함 -> 무조건 30번을 돌아야함
-        for (LocalDate i = startLocalDate; i.isBefore(startLocalDate.plusMonths(30)); i = i.plusMonths(1)) {
-            // 매월 마지막 날짜 계산
-            thirtyDateList.add(i.withDayOfMonth(i.lengthOfMonth()));
+        // 매월 X 일 변수 할당 (재활용을 위해 , 선언)
+        LocalDate everyMonthLastDay = null;
+
+        // 1번 반복문 -> 30개가 등록되었을 시점의 날짜 계산
+        while (true) {
+            if (thirtyDateList.size() == 30) {
+                // 조건문 만족시 , 반복문 탈출
+                break;
+            } else {
+                // 매월 마지막 날짜 계산
+                everyMonthLastDay = startLocalDate.withDayOfMonth(startLocalDate.lengthOfMonth());
+                // thirtyDateList add
+                thirtyDateList.add(everyMonthLastDay);
+                // 매 달마다 계산 이기에 plus 1 month
+                startLocalDate = startLocalDate.plusMonths(1);
+            }
         }
 
         // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
-        for (LocalDate i = startLocalDate; (i.isBefore(repeatEndLocalDate) || i.isEqual(repeatEndLocalDate)); i = i.plusMonths(1)) {
-            repeatDateList.add(i.withDayOfMonth(i.lengthOfMonth()));
-            // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-            if (repeatDateList.size() == 30) {
+        while (true) {
+            // 반복 종료일자 까지 , 반복문을 실행하고 , 해당 조건문을 만족하면 , break 문 실행
+            if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
+                // 조건문 만족시 , 반복문 탈출
                 break;
+            } else {
+                // 매월 마지막 날짜 계산
+                everyMonthLastDay = cloneStartLocalDate.withDayOfMonth(cloneStartLocalDate.lengthOfMonth());
+                // 부정 논리 연산자를 이용한 , 매월 X 일 <= repeatEndLocalDate 조건을 만족하는 경우만 , repeatDateList add 진행
+                if (!everyMonthLastDay.isAfter(repeatEndLocalDate)) {
+                    // repeatDateList add
+                    repeatDateList.add(everyMonthLastDay);
+                }
+                // 매 달마다 계산 이기에 plus 1 month
+                cloneStartLocalDate = cloneStartLocalDate.plusMonths(1);
             }
         }
 
@@ -812,7 +803,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : 매년 (80)
+     * repeatType : 매년 (80) (o)
      * 2022.12.19 서보인 작성
      *
      * @param request
@@ -824,26 +815,62 @@ public class CalculateUseTime {
 
         // ldtData -> key 값을 통해 각 변수에 데이터 할당
         LocalDate startLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate cloneStartLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         LocalDate repeatEndLocalDate = LocalDate.parse(String.valueOf(ldtData.get("repeatLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         // callResult 메소드 파라미터에 사용할 변수 선언
         List<LocalDate> thirtyDateList = new ArrayList<>();
         List<LocalDate> repeatDateList = new ArrayList<>();
 
-        // 1번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지 더해야함 -> 무조건 30번을 돌아야함
-        for (LocalDate i = startLocalDate; i.isBefore(startLocalDate.plusYears(30)); i = i.plusYears(1)) {
-            thirtyDateList.add(i);
-        }
+        // 일자 계산 (시작 일자가 , 몇일 인지 확인 EX) startDate 가 22.01.31 인 경우 , condDayOfMonth : 31)
+        int condDayOfMonth = startLocalDate.getDayOfMonth();
 
-        // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
-        for (LocalDate i = startLocalDate; (i.isBefore(repeatEndLocalDate) || i.isEqual(repeatEndLocalDate)); i = i.plusYears(1)) {
-            repeatDateList.add(i);
-            // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-            if (repeatDateList.size() == 30) {
+        // 매년 변수 할당 (재활용을 위해 , 선언)
+        LocalDate everyYearDay = null;
+
+        // 1번 반복문 -> 30개가 등록되었을 시점의 날짜 계산
+        while (true) {
+            if (thirtyDateList.size() == 30) {
+                // 조건문 만족시 , 반복문 탈출
                 break;
+            } else {
+                // 마지막 날짜
+                int monthLastDay = startLocalDate.withDayOfMonth(startLocalDate.lengthOfMonth()).getDayOfMonth();
+                // 기준이 되는 , startDate의 일자 <= 다음 달 일자 조건을 만족하는 경우 , 날짜값 할당을 할 수 있음 ( EX) 2월 인 경우 31일이 존재 하지 않음 )
+                if (condDayOfMonth <= monthLastDay) {
+                    // 매년
+                    everyYearDay = startLocalDate.plusYears(1);
+                    // repeatDateList add
+                    thirtyDateList.add(everyYearDay);
+                }
+                // 매 달마다 계산 이기에 plus 1 month
+                startLocalDate = startLocalDate.plusYears(1);
             }
         }
 
+        // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
+        while (true) {
+            // 반복 종료일자 까지 , 반복문을 실행하고 , 해당 조건문을 만족하면 , break 문 실행
+            if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
+                // 조건문 만족시 , 반복문 탈출
+                break;
+            } else {
+                // 마지막 날짜
+                int monthLastDay = cloneStartLocalDate.withDayOfMonth(cloneStartLocalDate.lengthOfMonth()).getDayOfMonth();
+                // 기준이 되는 , startDate의 일자 <= 다음 달 일자 조건을 만족하는 경우 , 날짜값 할당을 할 수 있음 ( EX) 2월 인 경우 31일이 존재 하지 않음 )
+                if ((condDayOfMonth <= monthLastDay)) {
+                    // 매월 x일
+                    everyYearDay = cloneStartLocalDate.withDayOfMonth(condDayOfMonth);
+                    // 부정 논리 연산자를 이용한 , 매월 X 일 <= repeatEndLocalDate 조건을 만족하는 경우만 , repeatDateList add 진행
+                    if (!everyYearDay.isAfter(repeatEndLocalDate)) {
+                        // repeatDateList add
+                        repeatDateList.add(everyYearDay);
+                    }
+                }
+                // 매 달마다 계산 이기에 plus 1 month
+                cloneStartLocalDate = cloneStartLocalDate.plusYears(1);
+            }
+        }
         // return
         return callResult(thirtyDateList, repeatDateList);
     }
