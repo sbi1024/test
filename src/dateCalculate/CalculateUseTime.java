@@ -9,23 +9,24 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 
-/** TODO READ ME !!!
+/**
+ * TODO READ ME !!!
  * date : 2022.12.26
  * writer : SeoBoIn
- *
+ * <p>
  * TODO 날짜 기준의 법칙 정리
  * 1. 한 주는 월요일 ~ 일요일을 1주일 이라고 한다.
- *
+ * <p>
  * 2. 몇번쨰 주차 라는 말은 , 해당 월의 1일이 어떤 요일에 속하는지에 따라서 첫주가 달라질수 있다.
  * EX1) 2022.01.01의 첫 주는 , 2022.01.03 ~ 2022.01.09 이다
  * EX2) 2022.01.01의 두번쨰 주는 , 2022.01.10 ~ 2022.01.16 이다
  * EX3) 2022.01.01의 세번째 주는 , 2022.01.17 ~ 2022.01.23 이다
  * EX4) 2022.01.01의 네번째 주는 , 2022.01.24 ~ 2022.01.30 이다
  * EX5) 2022.01.31 = 2월의 첫주에 포함된다 , 그러므로 2022.01.01의 마지막 주는 , 2022.01.24 ~ 2022.01.30 이다
- *
+ * <p>
  * 3. 첫주인지 아닌지 구별법은 다음과 같다 , 해당 월의 첫 날의 요일값이 목요일 포함 이전값인 경우 ,
  * 해당 주는 첫주로 인지된다 , 그러나 위 조건이 만족하지 않는 경우는 , 전달의 마지막 주로 인지된다.
- *
+ * <p>
  * 4. 날짜 구하는 계산의 국제 표준 기법은 국가기술표준원의 (KS X ISO8601) 이다
  * -> 관련링크 (https://www.standard.go.kr/KSCI/standardIntro/getStandardSearchView.do?menuId=503&topMenuId=502&ksNo=KSXISO8601&tmprKsNo=KSXISO8601&reformNo=03)
  */
@@ -70,7 +71,7 @@ public class CalculateUseTime {
         requestMap50.put("endDate", "202301311530"); // 일정 종료 일자
         requestMap50.put("repeatType", "50"); // 반복 타입
         requestMap50.put("repeatByDay", "1,2,5,6"); // 반복 요일
-        requestMap50.put("repeatEndDay", "20240330");
+        requestMap50.put("repeatEndDay", "");
 
         // 요청값 테스트 60 -> 매월 X번째 X요일 설정시 케이스
         Map<String, Object> requestMap60 = new HashMap<>();
@@ -88,10 +89,10 @@ public class CalculateUseTime {
         requestMap70.put("repeatByDay", ""); // 반복 요일
         requestMap70.put("repeatEndDay", "20240330");
 
-        // 요청값 테스트 71 -> 매월 마지막 주 X 요일 설정시 케이스
+        // 요청값 테스트 71 -> 매월 마지막 X 요일 설정시 케이스
         Map<String, Object> requestMap71 = new HashMap<>();
-        requestMap71.put("startDate", "202303291530"); // 일정 시작 일자
-        requestMap71.put("endDate", "202303291530"); // 일정 종료 일자
+        requestMap71.put("startDate", "202211301530"); // 일정 시작 일자
+        requestMap71.put("endDate", "202211301530"); // 일정 종료 일자
         requestMap71.put("repeatType", "71"); // 반복 타입
         requestMap71.put("repeatByDay", ""); // 반복 요일
         requestMap71.put("repeatEndDay", "20240330");
@@ -127,7 +128,7 @@ public class CalculateUseTime {
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 50 실행)
         Map<String, Object> result50 = switchCalculate(requestMap50);
-        // printRequestAndResult(requestMap50, result50);
+        printRequestAndResult(requestMap50, result50);
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 60 실행)
         Map<String, Object> result60 = switchCalculate(requestMap60);
@@ -139,7 +140,7 @@ public class CalculateUseTime {
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 71 실행)
         Map<String, Object> result71 = switchCalculate(requestMap71);
-        printRequestAndResult(requestMap71, result71);
+        // printRequestAndResult(requestMap71, result71);
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 72 실행)
         Map<String, Object> result72 = switchCalculate(requestMap72);
@@ -340,7 +341,7 @@ public class CalculateUseTime {
                 break;
             // 매월 마지막 X요일
             case "71":
-                returnData = everyMonthLastWeekXDayCalculate(request);
+                returnData = everyMonthLastXDayCalculate(request);
                 break;
             // 매월 마지막 날
             case "72":
@@ -513,12 +514,16 @@ public class CalculateUseTime {
             if (thirtyDateList.size() == 30) {
                 break;
             }
+            // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
+            int firstDayOfMonthNumberDay = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
+            // 해당 월의 몇째주 인지 계산
+            int startLocalDateNumberWeek = startLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
             // 2주마다 , 해당 주에 속하는 요일값 계산 반복문
             for (String day : repeatByDay) {
-                // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
-                int firstDayOfMonthNumberDay = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
-                // 해당 월의 몇째주 인지 계산
-                int startLocalDateNumberWeek = startLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
+                // 30개 까지의 데이터만 담기에 , 30개 break
+                if (thirtyDateList.size() == 30) {
+                    break;
+                }
                 // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
                 int dayNumber = Integer.parseInt(day);
                 // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
@@ -526,10 +531,6 @@ public class CalculateUseTime {
                     localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
                 } else {
                     localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek + 1, DayOfWeek.of(dayNumber)));
-                }
-                // 30개 까지의 데이터만 담기에 , 30개 break
-                if (thirtyDateList.size() == 30) {
-                    break;
                 }
                 // thirtyDateList add
                 thirtyDateList.add(localDate);
@@ -571,7 +572,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : (60) 매월 X번째 X요일 반복 (o)
+     * repeatType : (60) 매월 X번째 X요일 반복 (o , o)
      * 22.12.26 진행중 -> 주차가 아닌 , 몇번쨰 요일인지 확인하고 , with 메소드를 통해 얻어온 결과가 해당 월이 맞는지 판단 해야함
      * 2022.12.20 서보인 작성
      *
@@ -651,7 +652,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : (70) 매월 X일 반복 (o)
+     * repeatType : (70) 매월 X일 반복 (o , o)
      * 2022.12.20 서보인 작성
      *
      * @param request
@@ -723,13 +724,13 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : 매월 마지막 주 X요일 (71) (o -> 구글 캘린더 기준으로 확인함)
+     * repeatType : 매월 마지막 X요일 (71) (o , o)
      * 2022.12.19 서보인 작성
      *
      * @param request
      * @return Map<String, Object>
      */
-    public static Map<String, Object> everyMonthLastWeekXDayCalculate(Map<String, Object> request) {
+    public static Map<String, Object> everyMonthLastXDayCalculate(Map<String, Object> request) {
         // 공통으로 사용할 requestConvertLdt 메소드 호출
         Map<String, Object> ldtData = requestConvertLdt(request);
 
@@ -746,7 +747,7 @@ public class CalculateUseTime {
         DayOfWeek dayOfReqWeek = startLocalDate.getDayOfWeek();
 
         // 매월 마지막 주 X요일 변수 할당 (재활용을 위해 , 선언)
-        LocalDate everyMonthLastWeekXDay = null;
+        LocalDate everyMonthLastXDay = null;
 
         // 1번 반복문 -> 30번 등록될 시점까지의 반복문 실행
         while (true) {
@@ -755,18 +756,18 @@ public class CalculateUseTime {
             } else {
                 // 요청값의 마지막 날짜가 무슨 주차인지 확인 ( EX) 1 ~ 5 )
                 int reqLastWeekNumber = startLocalDate.withDayOfMonth(startLocalDate.lengthOfMonth()).get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // 달의 마지막 주차 X요일 할당
-                everyMonthLastWeekXDay = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber, dayOfReqWeek));
-                // X번째 주 값 체크
-                int checkWeekNumber = everyMonthLastWeekXDay.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // 할당한 값이 정말 X번째 X요일인지 확인
+                // 달의 마지막 X요일 할당
+                everyMonthLastXDay = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber, dayOfReqWeek));
+                // 주차 값 체크
+                int checkWeekNumber = everyMonthLastXDay.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
+                // 할당한 값이 정말 마지막 X 요일인지 확인
                 if (reqLastWeekNumber != checkWeekNumber) {
                     //  시작일자의 주차와 , 반복문을 통해 얻어낸 everyMonthLastWeekXDay 변수의 주차가 다르다면 , 전주의 값으로 계산
-                    everyMonthLastWeekXDay = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber - 1, dayOfReqWeek));
+                    everyMonthLastXDay = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber - 1, dayOfReqWeek));
                 }
             }
             // thirtyDateList add
-            thirtyDateList.add(everyMonthLastWeekXDay);
+            thirtyDateList.add(everyMonthLastXDay);
             // 반복문을 위한 한달 더하기
             startLocalDate = startLocalDate.plusMonths(1);
         }
@@ -778,17 +779,17 @@ public class CalculateUseTime {
             } else {
                 // 요청값의 마지막 날짜가 무슨 주차인지 확인 ( EX) 1 ~ 5 )
                 int reqLastWeekNumber = cloneStartLocalDate.withDayOfMonth(cloneStartLocalDate.lengthOfMonth()).get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // 달의 마지막 주차 X요일 할당
-                everyMonthLastWeekXDay = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber, dayOfReqWeek));
-                // X번째 주 값 체크
-                int checkWeekNumber = everyMonthLastWeekXDay.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // 할당한 값이 정말 X번째 X요일인지 확인
+                // 달의 마지막 X요일 할당
+                everyMonthLastXDay = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber, dayOfReqWeek));
+                // 주차 값 체크
+                int checkWeekNumber = everyMonthLastXDay.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
+                // 할당한 값이 정말 마지막 X 요일인지 확인
                 if (reqLastWeekNumber != checkWeekNumber) {
-                    //  시작일자의 주차와 , 반복문을 통해 얻어낸 everyMonthLastWeekXDay 변수의 주차가 다르다면 , 전주의 값으로 계산
-                    everyMonthLastWeekXDay = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber - 1, dayOfReqWeek));
+                    //  시작일자의 주차와 , 반복문을 통해 얻어낸 everyMonthLastXDay 변수의 주차가 다르다면 , 전주의 값으로 계산
+                    everyMonthLastXDay = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(reqLastWeekNumber - 1, dayOfReqWeek));
                 }
                 // thirtyDateList add
-                repeatDateList.add(everyMonthLastWeekXDay);
+                repeatDateList.add(everyMonthLastXDay);
                 // 반복문을 위한 한달 더하기
                 cloneStartLocalDate = cloneStartLocalDate.plusMonths(1);
             }
