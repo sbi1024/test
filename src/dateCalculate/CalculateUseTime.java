@@ -120,7 +120,7 @@ public class CalculateUseTime {
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 20 실행)
         Map<String, Object> result20 = switchCalculate(requestMap20);
-        printRequestAndResult(requestMap20, result20);
+        // printRequestAndResult(requestMap20, result20);
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 30 실행)
         Map<String, Object> result30 = switchCalculate(requestMap30);
@@ -132,7 +132,7 @@ public class CalculateUseTime {
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 50 실행)
         Map<String, Object> result50 = switchCalculate(requestMap50);
-        // printRequestAndResult(requestMap50, result50);
+        printRequestAndResult(requestMap50, result50);
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 60 실행)
         Map<String, Object> result60 = switchCalculate(requestMap60);
