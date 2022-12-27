@@ -6,7 +6,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -47,7 +51,7 @@ public class CalculateUseTime {
         requestMap20.put("endDate", "202301051530"); // 일정 종료 일자
         requestMap20.put("repeatType", "20"); // 반복 타입
         requestMap20.put("repeatByDay", ""); // 반복 요일
-        requestMap20.put("repeatEndDay", "20230105");
+        requestMap20.put("repeatEndDay", "20230205");
 
         // 요청값 테스트 30 -> 매 주 마다 설정시 케이스
         Map<String, Object> requestMap30 = new HashMap<>();
@@ -55,7 +59,7 @@ public class CalculateUseTime {
         requestMap30.put("endDate", "202301311530"); // 일정 종료 일자
         requestMap30.put("repeatType", "30"); // 반복 타입
         requestMap30.put("repeatByDay", "1,2,5,6"); // 반복 요일
-        requestMap30.put("repeatEndDay", "20240330");
+        requestMap30.put("repeatEndDay", "20230930");
 
         // 요청값 테스트 40 -> 매 주 마다 설정시 케이스
         Map<String, Object> requestMap40 = new HashMap<>();
@@ -116,7 +120,7 @@ public class CalculateUseTime {
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 20 실행)
         Map<String, Object> result20 = switchCalculate(requestMap20);
-        // printRequestAndResult(requestMap20, result20);
+        printRequestAndResult(requestMap20, result20);
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 30 실행)
         Map<String, Object> result30 = switchCalculate(requestMap30);
@@ -128,7 +132,7 @@ public class CalculateUseTime {
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 50 실행)
         Map<String, Object> result50 = switchCalculate(requestMap50);
-        printRequestAndResult(requestMap50, result50);
+        // printRequestAndResult(requestMap50, result50);
 
         // 반복 옵션값에 따라 일치하는 메소드가 호출됨 (요청값 테스트 60 실행)
         Map<String, Object> result60 = switchCalculate(requestMap60);
@@ -185,14 +189,14 @@ public class CalculateUseTime {
         List<LocalDate> repeatDateList = (List<LocalDate>) result.get("repeatDateList");
         String checkRepeatEndDay = String.valueOf(result.get("checkRepeatEndDay"));
         String checkRepeatEndDayCount = String.valueOf(result.get("checkRepeatEndDayCount"));
-        String beyond_yn = String.valueOf(result.get("beyond_yn"));
+        String beyondYn = String.valueOf(result.get("beyondYn"));
         String maxDate = String.valueOf(result.get("maxDate"));
         String minDate = String.valueOf(result.get("minDate"));
 
         // result 변수의 키값 데이터 출력
         System.out.println("checkRepeatEndDay = " + checkRepeatEndDay);
         System.out.println("checkRepeatEndDayCount = " + checkRepeatEndDayCount);
-        System.out.println("beyond_yn = " + beyond_yn);
+        System.out.println("beyondYn = " + beyondYn);
         System.out.println("maxDate = " + maxDate);
         System.out.println("minDate = " + minDate);
 
@@ -313,6 +317,7 @@ public class CalculateUseTime {
         switch (repeatType) {
             // 매일 반복
             case "20":
+                // returnData = everyDayCalculate(request);
                 returnData = everyDayCalculate(request);
                 break;
             /** TODO
@@ -369,23 +374,32 @@ public class CalculateUseTime {
 
         // ldtData -> key 값을 통해 각 변수에 데이터 할당
         LocalDate startLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate cloneStartLocalDate = LocalDate.parse(String.valueOf(ldtData.get("startLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         LocalDate repeatEndLocalDate = LocalDate.parse(String.valueOf(ldtData.get("repeatLocalDate")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         // callResult 메소드 파라미터에 사용할 변수 선언
         List<LocalDate> thirtyDateList = new ArrayList<>();
         List<LocalDate> repeatDateList = new ArrayList<>();
 
-        // 1번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지 더해야함 -> 무조건 30번을 돌아야함
-        for (LocalDate i = startLocalDate; i.isBefore(startLocalDate.plusDays(30)); i = i.plusDays(1)) {
-            thirtyDateList.add(i);
+        // 1번 반복문 -> 30번 등록될 시점까지의 반복문 실행
+        while (true) {
+            // 30개 까지의 데이터만 담기에 , 30개 break
+            if (thirtyDateList.size() == 30) {
+                break;
+            } else {
+                thirtyDateList.add(startLocalDate);
+                startLocalDate = startLocalDate.plusDays(1);
+            }
         }
 
         // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
-        for (LocalDate i = startLocalDate; (!i.isAfter(repeatEndLocalDate)); i = i.plusDays(1)) {
-            repeatDateList.add(i);
-            // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-            if (repeatDateList.size() == 30) {
+        while (true) {
+            // 30개 까지의 데이터만 담기에 , 30개 break
+            if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
                 break;
+            } else {
+                repeatDateList.add(cloneStartLocalDate);
+                cloneStartLocalDate = cloneStartLocalDate.plusDays(1);
             }
         }
 
@@ -394,7 +408,7 @@ public class CalculateUseTime {
     }
 
     /**
-     * repeatType : 매주 - 요일 지정 (30 , 40) -> 추후에 나누어서 케이스 관리할지 생각해야함
+     * repeatType : 매주 - 요일 지정 (30 , 40) -> 추후에 나누어서 케이스 관리할지 생각해야함 , 50번 테스트 진행시 문제없으면 그대로 처리 해도 됨
      * 2022.12.23 서보인 작성
      *
      * @param request
@@ -425,65 +439,71 @@ public class CalculateUseTime {
             if (thirtyDateList.size() == 30) {
                 break;
             }
-            // 1주마다 , 해당 주에 속하는 요일값 계산 반복문
+            // 2주마다 , 해당 주에 속하는 요일값 계산 반복문
             for (String day : repeatByDay) {
-                // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
-                int firstDayOfMonthNumberDay = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
-                // 해당 월의 몇째주 인지 계산
-                int startLocalDateNumberWeek = startLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
-                int dayNumber = Integer.parseInt(day);
-                // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
-                if (dayNumber < firstDayOfMonthNumberDay) {
-                    localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
-                } else {
-                    localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek + 1, DayOfWeek.of(dayNumber)));
-                }
                 // 30개 까지의 데이터만 담기에 , 30개 break
                 if (thirtyDateList.size() == 30) {
                     break;
                 }
+                // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
+                int firstDayOfMonthNumberDay = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
+                // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
+                int dayNumber = Integer.parseInt(day);
+                // 해당 월의 1일이 몆주차 인지 계산 , EX) 2023.01.01은 첫 날이지만 , 해당 일이 첫 주가 아니다. -> return 값 0으로 반환됨
+                int checkFirstDayWeekNumber = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).get(WeekFields.ISO.weekOfMonth());
+                // 해당 월의 몇째주 인지 계산
+                int startLocalDateNumberWeek = startLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
+                // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
+                if (dayNumber >= firstDayOfMonthNumberDay || checkFirstDayWeekNumber != 1) {
+                    localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
+                } else {
+                    localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek - 1, DayOfWeek.of(dayNumber)));
+                }
                 // thirtyDateList add
                 thirtyDateList.add(localDate);
             } // end for
-            // 1주마다 반복하기에 , plus 1 week
+            // 2주마다 반복하기에 , plus 2 week
             startLocalDate = startLocalDate.plusWeeks(1);
         }
 
         // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
-        for (LocalDate i = cloneStartLocalDate; (i.isBefore(repeatEndLocalDate) || i.isEqual(repeatEndLocalDate)); i = i.plusWeeks(1)) {
-            // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-            if (repeatDateList.size() == 30) {
+        while (true) {
+            if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
                 break;
+            } else {
+                // 2주마다 , 해당 주에 속하는 요일값 계산 반복문
+                for (String day : repeatByDay) {
+                    // 반복문 종료전까지만 날짜 계산 후 break 문
+                    if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
+                        break;
+                    }
+                    // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
+                    int firstDayOfMonthNumberDay = cloneStartLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
+                    // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
+                    int dayNumber = Integer.parseInt(day);
+                    // 해당 월의 1일이 몆주차 인지 계산 , EX) 2023.01.01은 첫 날이지만 , 해당 일이 첫 주가 아니다. -> return 값 0으로 반환됨
+                    int checkFirstDayWeekNumber = cloneStartLocalDate.with(TemporalAdjusters.firstDayOfMonth()).get(WeekFields.ISO.weekOfMonth());
+                    // 해당 월의 몇째주 인지 계산
+                    int startLocalDateNumberWeek = cloneStartLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
+                    // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
+                    if (dayNumber >= firstDayOfMonthNumberDay || checkFirstDayWeekNumber != 1) {
+                        localDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
+                    } else {
+                        localDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek - 1, DayOfWeek.of(dayNumber)));
+                    }
+                    // repeatDateList add
+                    repeatDateList.add(localDate);
+                } // end for
+                // 2주마다 반복하기에 , plus 2 week
+                cloneStartLocalDate = cloneStartLocalDate.plusWeeks(1);
             }
-            // 1주마다 , 해당 주에 속하는 요일값 계산 반복문
-            for (String day : repeatByDay) {
-                // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
-                int firstDayOfMonthNumberDay = i.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
-                // 해당 월의 몇째주 인지 계산
-                int startLocalDateNumberWeek = i.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
-                int dayNumber = Integer.parseInt(day);
-                // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
-                if (dayNumber < firstDayOfMonthNumberDay) {
-                    localDate = i.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
-                } else {
-                    localDate = i.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek + 1, DayOfWeek.of(dayNumber)));
-                }
-                // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-                if (repeatDateList.size() == 30) {
-                    break;
-                }
-                // thirtyDateList add
-                repeatDateList.add(localDate);
-            } // end for2
-        } // end for 1
+        } // end while
         // return
         return callResult(thirtyDateList, repeatDateList);
     }
 
     /**
-     * repeatType : 2주 - 요일 지정 (50)
+     * repeatType : 2주 - 요일 지정 (50) (o -> 테스트 진행 필요 , 예외적 케이스가 발생하고 있어서 다수의 테스트 필요)
      * 2022.12.22 서보인 작성
      *
      * @param request
@@ -514,23 +534,25 @@ public class CalculateUseTime {
             if (thirtyDateList.size() == 30) {
                 break;
             }
-            // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
-            int firstDayOfMonthNumberDay = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
-            // 해당 월의 몇째주 인지 계산
-            int startLocalDateNumberWeek = startLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
             // 2주마다 , 해당 주에 속하는 요일값 계산 반복문
             for (String day : repeatByDay) {
                 // 30개 까지의 데이터만 담기에 , 30개 break
                 if (thirtyDateList.size() == 30) {
                     break;
                 }
+                // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
+                int firstDayOfMonthNumberDay = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
                 // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
                 int dayNumber = Integer.parseInt(day);
+                // 해당 월의 1일이 몆주차 인지 계산 , EX) 2023.01.01은 첫 날이지만 , 해당 일이 첫 주가 아니다. -> return 값 0으로 반환됨
+                int checkFirstDayWeekNumber = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).get(WeekFields.ISO.weekOfMonth());
+                // 해당 월의 몇째주 인지 계산
+                int startLocalDateNumberWeek = startLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
                 // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
-                if (dayNumber < firstDayOfMonthNumberDay) {
+                if (dayNumber >= firstDayOfMonthNumberDay || checkFirstDayWeekNumber != 1) {
                     localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
                 } else {
-                    localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek + 1, DayOfWeek.of(dayNumber)));
+                    localDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek - 1, DayOfWeek.of(dayNumber)));
                 }
                 // thirtyDateList add
                 thirtyDateList.add(localDate);
@@ -540,33 +562,38 @@ public class CalculateUseTime {
         }
 
         // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
-        for (LocalDate i = cloneStartLocalDate; (i.isBefore(repeatEndLocalDate) || i.isEqual(repeatEndLocalDate)); i = i.plusWeeks(2)) {
-            // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-            if (repeatDateList.size() == 30) {
+        while (true) {
+            if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
                 break;
+            } else {
+                // 2주마다 , 해당 주에 속하는 요일값 계산 반복문
+                for (String day : repeatByDay) {
+                    // 반복문 종료전까지만 날짜 계산 후 break 문
+                    if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
+                        break;
+                    }
+                    // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
+                    int firstDayOfMonthNumberDay = cloneStartLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
+                    // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
+                    int dayNumber = Integer.parseInt(day);
+                    // 해당 월의 1일이 몆주차 인지 계산 , EX) 2023.01.01은 첫 날이지만 , 해당 일이 첫 주가 아니다. -> return 값 0으로 반환됨
+                    int checkFirstDayWeekNumber = cloneStartLocalDate.with(TemporalAdjusters.firstDayOfMonth()).get(WeekFields.ISO.weekOfMonth());
+                    // 해당 월의 몇째주 인지 계산
+                    int startLocalDateNumberWeek = cloneStartLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
+                    // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
+                    if (dayNumber >= firstDayOfMonthNumberDay || checkFirstDayWeekNumber != 1) {
+                        localDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
+                    } else {
+                        localDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek - 1, DayOfWeek.of(dayNumber)));
+                    }
+                    // repeatDateList add
+                    repeatDateList.add(localDate);
+                } // end for
+                // 2주마다 반복하기에 , plus 2 week
+                cloneStartLocalDate = cloneStartLocalDate.plusWeeks(2);
             }
-            // 2주마다 , 해당 주에 속하는 요일값 계산 반복문
-            for (String day : repeatByDay) {
-                // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
-                int firstDayOfMonthNumberDay = i.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
-                // 해당 월의 몇째주 인지 계산
-                int startLocalDateNumberWeek = i.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
-                int dayNumber = Integer.parseInt(day);
-                // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
-                if (dayNumber < firstDayOfMonthNumberDay) {
-                    localDate = i.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
-                } else {
-                    localDate = i.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek + 1, DayOfWeek.of(dayNumber)));
-                }
-                // 반복문이 너무 많이 돌 경우를 대비하여 , 31개인 경우 해당 반복문 탈출
-                if (repeatDateList.size() == 30) {
-                    break;
-                }
-                // thirtyDateList add
-                repeatDateList.add(localDate);
-            } // end for2
-        } // end for 1
+        } // end while
+
         // return
         return callResult(thirtyDateList, repeatDateList);
     }
@@ -1004,7 +1031,7 @@ public class CalculateUseTime {
         // 반복 일정 종료일까지의 등록될 일정 count 갯수 반환
         String checkRepeatEndDayCount = "";
         // 등록될 일정의 갯수가 30개 초과 유무 EX) 30개 초과인 경우 , Y 아닌경우 N
-        String beyond_yn = "";
+        String beyondYn = "";
         // 일정 시작일 로부터의 10개 등록될 시 반복 종료일자
         String minDate = "";
         // 일정 시작일 로부터의 30개 등록될 시 반복 종료일자
@@ -1018,11 +1045,11 @@ public class CalculateUseTime {
         if (thirtyDateSize < repeatDateSize) {
             checkRepeatEndDay = String.valueOf(thirtyDateList.get(thirtyDateSize - 1));
             checkRepeatEndDayCount = String.valueOf(thirtyDateSize);
-            beyond_yn = "Y";
+            beyondYn = "Y";
         } else {
             checkRepeatEndDay = String.valueOf(repeatDateList.get(repeatDateSize - 1));
             checkRepeatEndDayCount = String.valueOf(repeatDateSize);
-            beyond_yn = "N";
+            beyondYn = "N";
         }
 
         // minDate , maxDate 값 할당
@@ -1032,7 +1059,7 @@ public class CalculateUseTime {
         // returnData 변수에 키값에 알맞는 값 할당
         returnData.put("checkRepeatEndDay", checkRepeatEndDay);
         returnData.put("checkRepeatEndDayCount", checkRepeatEndDayCount);
-        returnData.put("beyond_yn", beyond_yn);
+        returnData.put("beyondYn", beyondYn);
         returnData.put("minDate", minDate);
         returnData.put("maxDate", maxDate);
 
