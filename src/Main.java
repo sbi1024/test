@@ -1,4 +1,4 @@
-import dateCalculate.CalculateUseTime;
+import utilCollect.logic.utilLogic;
 
 public class Main {
     public static void main(String[] args) throws Exception{
@@ -162,10 +162,10 @@ public class Main {
         // utilLogic.logicTest52();
         // utilLogic.logicTest56();
         // utilLogic.logicTest57();
+        utilLogic.logicTest58();
 
 
 
-        CalculateUseTime.mainLogic();
 
 
     }

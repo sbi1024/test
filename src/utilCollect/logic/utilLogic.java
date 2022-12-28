@@ -1,5 +1,6 @@
 package utilCollect.logic;
 
+import builder.Member;
 import classCollect.alphabet.D;
 import classCollect.calendar.KoreanLunarCalendar;
 import classCollect.comparable.Book;
@@ -1280,8 +1281,21 @@ public class utilLogic {
         boolean comparDateTime = startLocalDateTime.isAfter(endLocalDatetime);
         System.out.println("after = " + comparDateTime);
     }
-    public static void logicTest57() {
-        LocalDate ld1 = LocalDate.of(2022,22,12);
 
+    public static void logicTest57() {
+        LocalDate ld1 = LocalDate.of(2022, 22, 12);
+
+    }
+
+    public static void logicTest58() {
+        Member member = Member.builder()
+                .name("jan")
+                .age(99)
+                .address("jan")
+                .phone("010")
+                .build();
+
+        Member build = Member.builder().name("12").build();
+        System.out.println("build = " + build);
     }
 }
