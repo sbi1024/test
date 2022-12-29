@@ -17,6 +17,7 @@ import classCollect.polymorphism.girl;
 import classCollect.polymorphism.parent;
 import classCollect.stream.user;
 import classCollect.thread.*;
+import dateCalculate.dto.CalculateUseTimeByDto;
 import dto.personDto;
 import utilCollect.enumclass.statusEnum;
 import utilCollect.method.utilMethod;
@@ -1297,5 +1298,9 @@ public class utilLogic {
 
         Member build = Member.builder().name("12").build();
         System.out.println("build = " + build);
+    }
+
+    public static void logicTest59() {
+        CalculateUseTimeByDto.mainLogic();
     }
 }

@@ -1,4 +1,4 @@
-package dateCalculate;
+package dateCalculate.map;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -36,7 +36,7 @@ import java.util.Map;
  */
 
 
-public class CalculateUseTime {
+public class CalculateUseTimeByMap {
     /**
      * 2022.12.23 서보인 작성
      * mainLogic 메소드 실행시 , 해당 메소드 안에 map 변수를 통해 -> 각각의 케이스 테스트 진행
