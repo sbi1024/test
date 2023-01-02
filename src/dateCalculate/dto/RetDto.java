@@ -1,6 +1,7 @@
 package dateCalculate.dto;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,13 +27,34 @@ public class RetDto {
     private List<LocalDate> repeatDateList;
 
 
-    /** TODO 접근 제어자를 private 로 설정하여 , new 연산자를 통해 객체 생성을 불가하게 지정 */
-    private RetDto() {}
+    /**
+     * TODO 접근 제어자를 private 로 설정하여 , new 연산자를 통해 객체 생성을 불가하게 지정
+     * 최초 객체 생성시 , List 변수는 new 연산자를 통해 null 값이 아닌 상태로 초기화
+     */
+    private RetDto() {
+        // 초기값 설정
+        this.thirtyDateList = new ArrayList<>();
+        this.repeatDateList = new ArrayList<>();
+    }
+
+    /**
+     * TODO Clear 메소드를 통해 , 해당 객체를 계속해서 재 활용할수 있도록 구성
+     */
+    public void dtoClear() {
+        this.checkRepeatEndDay = "";
+        this.checkRepeatEndDayCount = "";
+        this.beyondYn = "";
+        this.minDate = "";
+        this.maxDate = "";
+        this.thirtyDateList = new ArrayList<>();
+        this.repeatDateList = new ArrayList<>();
+    }
 
     // get , set checkRepeatEndDay
     public String getCheckRepeatEndDay() {
         return checkRepeatEndDay;
     }
+
     public void setCheckRepeatEndDay(String checkRepeatEndDay) {
         this.checkRepeatEndDay = checkRepeatEndDay;
     }
@@ -41,6 +63,7 @@ public class RetDto {
     public String getCheckRepeatEndDayCount() {
         return checkRepeatEndDayCount;
     }
+
     public void setCheckRepeatEndDayCount(String checkRepeatEndDayCount) {
         this.checkRepeatEndDayCount = checkRepeatEndDayCount;
     }
@@ -49,6 +72,7 @@ public class RetDto {
     public String getBeyondYn() {
         return beyondYn;
     }
+
     public void setBeyondYn(String beyondYn) {
         this.beyondYn = beyondYn;
     }
@@ -57,6 +81,7 @@ public class RetDto {
     public String getMinDate() {
         return minDate;
     }
+
     public void setMinDate(String minDate) {
         this.minDate = minDate;
     }
@@ -65,6 +90,7 @@ public class RetDto {
     public String getMaxDate() {
         return maxDate;
     }
+
     public void setMaxDate(String maxDate) {
         this.maxDate = maxDate;
     }
@@ -73,6 +99,7 @@ public class RetDto {
     public List<LocalDate> getThirtyDateList() {
         return thirtyDateList;
     }
+
     public void setThirtyDateList(List<LocalDate> thirtyDateList) {
         this.thirtyDateList = thirtyDateList;
     }
@@ -81,6 +108,7 @@ public class RetDto {
     public List<LocalDate> getRepeatDateList() {
         return repeatDateList;
     }
+
     public void setRepeatDateList(List<LocalDate> repeatDateList) {
         this.repeatDateList = repeatDateList;
     }

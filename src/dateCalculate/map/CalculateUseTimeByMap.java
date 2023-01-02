@@ -928,7 +928,7 @@ public class CalculateUseTimeByMap {
                     // repeatDateList add
                     thirtyDateList.add(everyYearDay);
                 }
-                // 매 달마다 계산 이기에 plus 1 month
+                // 매 달마다 계산 이기에 plus 1 years
                 startLocalDate = startLocalDate.plusYears(1);
             }
         }
@@ -952,7 +952,7 @@ public class CalculateUseTimeByMap {
                         repeatDateList.add(everyYearDay);
                     }
                 }
-                // 매 달마다 계산 이기에 plus 1 month
+                // 매 달마다 계산 이기에 plus 1 years
                 cloneStartLocalDate = cloneStartLocalDate.plusYears(1);
             }
         }
