@@ -1,7 +1,6 @@
 package dateCalculate.dto;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,6 +10,8 @@ import java.util.Objects;
  * request 반환값에 사용할 DTO 클래스 정의
  */
 public class RetDto {
+    /** TODO 싱글톤으로 관리하기 위한  timeLibrary 정적 변수 null 선언 */
+    private static RetDto retDto = null;
     // 반복일정 등록시 , 등록될 일정의 갯수가 30개 이상인 경우 , 30개까지 등록될수 있는 반복일정 종료일 값
     private String checkRepeatEndDay;
     // 반복 일정 종료일까지의 등록될 일정 count 갯수 반환
@@ -28,26 +29,22 @@ public class RetDto {
 
 
     /**
-     * TODO 접근 제어자를 private 로 설정하여 , new 연산자를 통해 객체 생성을 불가하게 지정
-     * 최초 객체 생성시 , List 변수는 new 연산자를 통해 null 값이 아닌 상태로 초기화
+     * TODO line 1) 접근 제어자를 private 로 설정하여 , new 연산자를 통해 객체 생성을 불가하게 지정
+     * TODO line 2) 최초 객체 생성시 , List 변수는 new 연산자를 통해 null 값이 아닌 상태로 초기화
      */
-    private RetDto() {
-        // 초기값 설정
-        this.thirtyDateList = new ArrayList<>();
-        this.repeatDateList = new ArrayList<>();
-    }
+    private RetDto() {}
 
     /**
      * TODO Clear 메소드를 통해 , 해당 객체를 계속해서 재 활용할수 있도록 구성
      */
-    public void dtoClear() {
+    private void dtoClear() {
         this.checkRepeatEndDay = "";
         this.checkRepeatEndDayCount = "";
         this.beyondYn = "";
         this.minDate = "";
         this.maxDate = "";
-        this.thirtyDateList = new ArrayList<>();
-        this.repeatDateList = new ArrayList<>();
+        this.thirtyDateList = null;
+        this.repeatDateList = null;
     }
 
     // get , set checkRepeatEndDay
@@ -123,7 +120,11 @@ public class RetDto {
      * TODO 이번 경우는 정적 팩토리 메소드를 통해 구성할 예정
      */
     public static RetDto createRetDto() {
-        return new RetDto();
+        if (retDto == null) {
+            return new RetDto();
+        }
+        retDto.dtoClear();
+        return retDto;
     }
 
     /*******************************************************************************************************************
@@ -136,15 +137,13 @@ public class RetDto {
     // toString 메소드 정의
     @Override
     public String toString() {
-        return "RetDto{" +
-                "checkRepeatEndDay='" + checkRepeatEndDay + '\'' +
-                ", checkRepeatEndDayCount='" + checkRepeatEndDayCount + '\'' +
-                ", beyondYn='" + beyondYn + '\'' +
-                ", minDate='" + minDate + '\'' +
-                ", maxDate='" + maxDate + '\'' +
-                ", thirtyDateList=" + thirtyDateList +
-                ", repeatDateList=" + repeatDateList +
-                '}';
+        return  "checkRepeatEndDay='" + checkRepeatEndDay + '\'' + System.lineSeparator() +
+                "checkRepeatEndDayCount='" + checkRepeatEndDayCount + '\'' + System.lineSeparator() +
+                "beyondYn='" + beyondYn + '\'' + System.lineSeparator() +
+                "minDate='" + minDate + '\'' + System.lineSeparator() +
+                "maxDate='" + maxDate + '\'' + System.lineSeparator() +
+                "thirtyDateList=" + thirtyDateList + System.lineSeparator() +
+                "repeatDateList=" + repeatDateList + System.lineSeparator();
     }
 
     // equals 메소드 재정의

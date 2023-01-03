@@ -8,6 +8,7 @@ import java.util.Objects;
  * request 요청값에 사용할 DTO 클래스 정의
  */
 public class ReqDto {
+    private static ReqDto reqDto;
     // 시작 날짜 EX) 202301051530
     private String startDate;
     // 종료 날짜 EX) 202301051730
@@ -69,7 +70,22 @@ public class ReqDto {
 
     /** TODO 이번 경우는 정적 팩토리 메소드를 통해 구성할 예정 */
     public static ReqDto createReqDto(){
-        return new ReqDto();
+        if (reqDto == null) {
+            return new ReqDto();
+        }
+        reqDto.dtoClear();
+        return reqDto;
+    }
+
+    /**
+     * TODO Clear 메소드를 통해 , 해당 객체를 계속해서 재 활용할수 있도록 구성
+     */
+    private void dtoClear() {
+        this.startDate = "";
+        this.endDate = "";
+        this.repeatType = "";
+        this.repeatByDay = "";
+        this.repeatEndDay = "";
     }
 
 
@@ -83,13 +99,11 @@ public class ReqDto {
     // toString 메소드 정의
     @Override
     public String toString() {
-        return "ReqDto{" +
-                "startDate='" + startDate + '\'' +
-                ", endDate='" + endDate + '\'' +
-                ", repeatType='" + repeatType + '\'' +
-                ", repeatByDay='" + repeatByDay + '\'' +
-                ", repeatEndDay='" + repeatEndDay + '\'' +
-                '}';
+        return "startDate='" + startDate + '\'' + System.lineSeparator() +
+                "endDate='" + endDate + '\'' + System.lineSeparator() +
+                "repeatType='" + repeatType + '\'' + System.lineSeparator() +
+                "repeatByDay='" + repeatByDay + '\'' + System.lineSeparator() +
+                "repeatEndDay='" + repeatEndDay + '\'' + System.lineSeparator();
     }
 
     // equals 메소드 재정의

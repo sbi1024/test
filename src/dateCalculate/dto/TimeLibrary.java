@@ -2,18 +2,105 @@ package dateCalculate.dto;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TimeLibrary {
+    /** TODO 싱글톤으로 관리하기 위한  timeLibrary 정적 변수 null 선언 */
+    private static TimeLibrary timeLibrary = null;
+
     /**
-     * * TODO line 1) 해당 클래스를 통해 , 날짜계산을 진행을 할때 , 최종적으로 사용되는 return 변수는 RetDto Class의 객체이다.
+     *  TODO line 1) 해당 클래스를 통해 , 날짜계산을 진행을 할때 , 최종적으로 사용되는 return 변수는 RetDto Class 의 객체이다.
      *  TODO line 2) 그러므로 전역변수로 사용하여 , 메모리 관리 측면에서 효율성을 가져올수 있도록 구성한다.
      */
-    private static RetDto returnData = RetDto.createRetDto();
+    private RetDto returnData = RetDto.createRetDto();
 
-    public static RetDto callingMethod(ReqDto request) {
-        // 전역변수로 사용되는 returnData 값 계속해서 재활용을 위한 clear 진행
-        returnData.dtoClear();
+    /** TODO switchCalculate 메소드에서 호출되는 각 날짜 계산 메소드에서 공통적으로 사용되는 변수에 대한 처리를 진행 */
+    // 1. 시작 날짜
+    private String startDate;
+    // 2. 종료 날짜
+    private String endDate;
+    // 3. 반복 요일 splitRepeatDay 메소드를 통해 데이터 변환 진행
+    private String[] repeatByDay;
+    // 4. 반복 종료 일자
+    private String repeatEndDay;
+    // 5. 시작날짜 LocalDate 타입 변수 선언
+    private LocalDate startLocalDate;
+    // 6. 클론 시작날짜 LocalDate 타입 변수 선언
+    private LocalDate cloneStartLocalDate;
+    // 7. 반복 종료 날짜 LocalDate 타입 변수 선언
+    private LocalDate repeatEndLocalDate;
+    // 8. 30개가 일정 등록될 시점의 List
+    private List<LocalDate> thirtyDateList;
+    // 9. 반복 종료일자까지 일정 등록될 시점의 List
+    private List<LocalDate> repeatDateList;
+    // 10. 8번 9번 변수에 해당하는 요소 값 (재활용 변수)
+    private LocalDate elementLocalDate;
+    // 11. 일자 계산 (시작 일자가 , 몇일 인지 확인 EX) startDate 가 22.01.31 인 경우 , startDayOfMonth : 31)
+    private int startDayOfMonth;
+
+    /** TODO 접근 제어자를 private 로 설정하여 , new 연산자를 통해 객체 생성을 불가하게 지정 */
+    private TimeLibrary(){}
+
+    /** TODO 이번 경우는 정적 팩토리 메소드를 통해 구성할 예정 */
+    public static TimeLibrary createTimeLibrary(){
+        // static 변수로 선언되어 있는 timeLibrary 싱글톤 처리
+        if(timeLibrary == null){
+            timeLibrary = new TimeLibrary();
+        }
+        // 공통 변수 초기화 하여 반환
+        timeLibrary.clearCommonValue();
+        // return
+        return timeLibrary;
+    }
+
+    /**
+     * 2023.01.03 서보인 작성
+     * 공통 변수 타입 기본값으로 초기화
+     *
+     * @param
+     * @return void
+     */
+    public void clearCommonValue() {
+        this.startDate = "";
+        this.endDate = "";
+        this.repeatByDay = null;
+        this.repeatEndDay = "";
+        this.startLocalDate = null;
+        this.cloneStartLocalDate = null;
+        this.repeatEndLocalDate = null;
+        this.elementLocalDate = null;
+        this.thirtyDateList = null;
+        this.repeatDateList = null;
+        this.startDayOfMonth = 0;
+    }
+
+    /**
+     * 2023.01.03 서보인 작성
+     * 공통 변수 값 셋팅
+     *
+     * @param request
+     * @return void
+     */
+    public void commonValueSetting(ReqDto request) {
+        // 공통적으로 사용하는 변수 값 셋팅
+        this.startDate = request.getStartDate();
+        this.endDate = request.getEndDate();
+        this.repeatByDay = splitRepeatDay(request.getRepeatByDay());
+        this.repeatEndDay = request.getRepeatEndDay();
+        this.startLocalDate = parsingLocalDate(startDate);
+        this.cloneStartLocalDate = parsingLocalDate(startDate);
+        this.repeatEndLocalDate = parsingLocalDate(repeatEndDay);
+        // this.elementLocalDate = null;
+        this.thirtyDateList = new ArrayList<>();
+        this.repeatDateList = new ArrayList<>();
+        this.startDayOfMonth = startLocalDate.getDayOfMonth();
+    }
+
+    /**
+     * TODO =========================================== 절취선 ========================================================
+     */
+    public RetDto callingMethod(ReqDto request) {
         // 파라미터 검증
         if (request == null) {
             // null 값인 경우 , null 로 반환
@@ -38,7 +125,7 @@ public class TimeLibrary {
      * @param request
      * @return returnData
      */
-    public static LocalDate getRepeatEndDay(ReqDto request) {
+    public LocalDate getRepeatEndDay(ReqDto request) {
         // return 변수 선언
         LocalDate returnData = null;
         // 반복 요일 값 선언
@@ -96,14 +183,15 @@ public class TimeLibrary {
      * @param request
      * @return returnData
      */
-    public static RetDto switchCalculate(ReqDto request) {
+    public RetDto switchCalculate(ReqDto request) {
+        // 공통적으로 사용하는 변수 메소드를 통해 값 셋팅
+        commonValueSetting(request);
         // 반복타입 추출
         String repeatType = request.getRepeatType();
-
         switch (repeatType) {
             // 매일 반복
             case "20":
-                returnData = everyDayCalculate(request);
+                returnData = everyDayCalculate();
                 break;
             /** TODO
              * 기존 정책상으로는 추측상 , repeatType이 30인 경우 , 1주일중 월 ~ 금 에 해당하는 케이스만 선택되었을때 실행하는듯 하나
@@ -132,14 +220,17 @@ public class TimeLibrary {
                 break;
             // 매년 반복
             case "80":
-                returnData = everyYearCalculate(request);
+                returnData = everyYearCalculate();
+                break;
+            default:
+                System.out.println("잘못된 반복 타입 입니다.");
                 break;
         }
         // return -> returnData
         return returnData;
     }
 
-    public static String[] splitRepeatDay(String repeatByDay) {
+    public String[] splitRepeatDay(String repeatByDay) {
         String[] returnData = null;
 
         // 1. null 값 체크
@@ -170,7 +261,7 @@ public class TimeLibrary {
      * @param localDateStr
      * @return returnData
      */
-    public static LocalDate parsingLocalDate(String localDateStr) {
+    public LocalDate parsingLocalDate(String localDateStr) {
         // return 변수 선언
         LocalDate returnData = null;
 
@@ -207,7 +298,7 @@ public class TimeLibrary {
      * @param strLocalDate
      * @return returnData
      */
-    public static String parsingString(LocalDate strLocalDate) {
+    public String parsingString(LocalDate strLocalDate) {
         // return 변수 선언
         String returnData = null;
 
@@ -237,29 +328,10 @@ public class TimeLibrary {
      * repeatType : 매일 (20)
      * 2023.01.02 서보인 작성
      *
-     * @param request
+     * @param
      * @return returnData
      */
-    public static RetDto everyDayCalculate(ReqDto request) {
-        // 1. 시작 날짜
-        String startDate = request.getStartDate();
-        // 2. 종료 날짜
-        String endDate = request.getEndDate();
-        // 3. 반복 요일 splitRepeatDay 메소드를 통해 데이터 변환 진행
-        String[] repeatByDay = splitRepeatDay(request.getRepeatByDay());
-        // 4. 반복 종료 일자
-        String repeatEndDay = request.getRepeatEndDay();
-
-        // 시작날짜 LocalDate 타입 변수 선언
-        LocalDate startLocalDate = parsingLocalDate(startDate);
-        // 클론 시작날짜 LocalDate 타입 변수 선언
-        LocalDate cloneStartLocalDate = parsingLocalDate(startDate);
-        // 반복 종료 날짜 LocalDate 타입 변수 선언
-        LocalDate repeatEndLocalDate = parsingLocalDate(repeatEndDay);
-
-        List<LocalDate> thirtyDateList = returnData.getThirtyDateList();
-        List<LocalDate> repeatDateList = returnData.getRepeatDateList();
-
+    public RetDto everyDayCalculate() {
         // 1번 반복문 -> 30번 등록될 시점까지의 반복문 실행
         while (true) {
             // 30개 까지의 데이터만 담기에 , 30개 break
@@ -288,48 +360,39 @@ public class TimeLibrary {
 
     /**
      * repeatType : 매월 마지막 날 (72)
-     * 2023.01.02 서보인 작성
+     * 2023.01.03 서보인 작성
      *
-     * @param request
+     * @param
      * @return returnData
      */
-    public static RetDto everyMonthLastDayCalculate(ReqDto request) {
-        return returnData;
+    public RetDto everyMonthLastDayCalculate(){
+        // 1번 반복문 -> 30개가 등록되었을 시점의 날짜 계산
+        while (true) {
+            if (thirtyDateList.size() == 30) {
+                // 조건문 만족시 , 반복문 탈출
+                break;
+            } else {
+                // 매월 마지막 날짜 계산
+                elementLocalDate = startLocalDate.withDayOfMonth(startLocalDate.lengthOfMonth());
+                // thirtyDateList add
+                thirtyDateList.add(elementLocalDate);
+                // 매 달마다 계산 이기에 plus 1 month
+                startLocalDate = startLocalDate.plusMonths(1);
+            }
+        }
+
+        // 최종 결과값 반환을 위한 계산 진행 return -> returnData
+        return callResult(thirtyDateList, repeatDateList);
     }
 
     /**
      * repeatType : 매일 (80)
      * 2023.01.02 서보인 작성
      *
-     * @param request
+     * @param
      * @return returnData
      */
-    public static RetDto everyYearCalculate(ReqDto request) {
-        // 1. 시작 날짜
-        String startDate = request.getStartDate();
-        // 2. 종료 날짜
-        String endDate = request.getEndDate();
-        // 3. 반복 요일 splitRepeatDay 메소드를 통해 데이터 변환 진행
-        String[] repeatByDay = splitRepeatDay(request.getRepeatByDay());
-        // 4. 반복 종료 일자
-        String repeatEndDay = request.getRepeatEndDay();
-
-        // 시작날짜 LocalDate 타입 변수 선언
-        LocalDate startLocalDate = parsingLocalDate(startDate);
-        // 클론 시작날짜 LocalDate 타입 변수 선언
-        LocalDate cloneStartLocalDate = parsingLocalDate(startDate);
-        // 반복 종료 날짜 LocalDate 타입 변수 선언
-        LocalDate repeatEndLocalDate = parsingLocalDate(repeatEndDay);
-
-        List<LocalDate> thirtyDateList = returnData.getThirtyDateList();
-        List<LocalDate> repeatDateList = returnData.getRepeatDateList();
-
-        // 일자 계산 (시작 일자가 , 몇일 인지 확인 EX) startDate 가 22.01.31 인 경우 , condDayOfMonth : 31)
-        int condDayOfMonth = startLocalDate.getDayOfMonth();
-
-        // 매년 변수 할당 (재활용을 위해 , 선언)
-        LocalDate everyYearDay = null;
-
+    public RetDto everyYearCalculate(){
         // 1번 반복문 -> 30개가 등록되었을 시점의 날짜 계산
         while (true) {
             if (thirtyDateList.size() == 30) {
@@ -339,11 +402,9 @@ public class TimeLibrary {
                 // 마지막 날짜
                 int monthLastDay = startLocalDate.withDayOfMonth(startLocalDate.lengthOfMonth()).getDayOfMonth();
                 // 기준이 되는 , startDate의 일자 <= 다음 달 일자 조건을 만족하는 경우 , 날짜값 할당을 할 수 있음 ( EX) 2월 인 경우 31일이 존재 하지 않음 )
-                if (condDayOfMonth <= monthLastDay) {
-                    // 매년
-                    everyYearDay = startLocalDate.plusYears(1);
+                if (startDayOfMonth <= monthLastDay) {
                     // repeatDateList add
-                    thirtyDateList.add(everyYearDay);
+                    thirtyDateList.add(startLocalDate);
                 }
                 // 매 달마다 계산 이기에 plus 1 years
                 startLocalDate = startLocalDate.plusYears(1);
@@ -360,25 +421,25 @@ public class TimeLibrary {
                 // 마지막 날짜
                 int monthLastDay = cloneStartLocalDate.withDayOfMonth(cloneStartLocalDate.lengthOfMonth()).getDayOfMonth();
                 // 기준이 되는 , startDate의 일자 <= 다음 달 일자 조건을 만족하는 경우 , 날짜값 할당을 할 수 있음 ( EX) 2월 인 경우 31일이 존재 하지 않음 )
-                if ((condDayOfMonth <= monthLastDay)) {
+                if ((startDayOfMonth <= monthLastDay)) {
                     // 매월 x일
-                    everyYearDay = cloneStartLocalDate.withDayOfMonth(condDayOfMonth);
+                    cloneStartLocalDate = cloneStartLocalDate.withDayOfMonth(startDayOfMonth);
                     // 부정 논리 연산자를 이용한 , 매월 X 일 <= repeatEndLocalDate 조건을 만족하는 경우만 , repeatDateList add 진행
-                    if (!everyYearDay.isAfter(repeatEndLocalDate)) {
+                    if (!cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
                         // repeatDateList add
-                        repeatDateList.add(everyYearDay);
+                        repeatDateList.add(cloneStartLocalDate);
                     }
                 }
                 // 매 달마다 계산 이기에 plus 1 years
                 cloneStartLocalDate = cloneStartLocalDate.plusYears(1);
             }
         }
-        // return
+        // 최종 결과값 반환을 위한 계산 진행 return -> returnData
         return callResult(thirtyDateList, repeatDateList);
-
     }
 
-    private static RetDto callResult(List<LocalDate> thirtyDateList, List<LocalDate> repeatDateList) {
+
+    private RetDto callResult(List<LocalDate> thirtyDateList, List<LocalDate> repeatDateList) {
         // 1. 파라미터 null 값 체크
         // 2. 파라미터 size () < 1
         if (thirtyDateList == null || repeatDateList == null ||
