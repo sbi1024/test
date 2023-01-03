@@ -217,6 +217,7 @@ public class TimeLibrary {
                 break;
             // 매월 마지막 날
             case "72":
+                returnData = everyMonthLastDayCalculate();
                 break;
             // 매년 반복
             case "80":
@@ -378,6 +379,25 @@ public class TimeLibrary {
                 thirtyDateList.add(elementLocalDate);
                 // 매 달마다 계산 이기에 plus 1 month
                 startLocalDate = startLocalDate.plusMonths(1);
+            }
+        }
+
+        // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자 까지만 루프문을 돔
+        while (true) {
+            // 반복 종료일자 까지 , 반복문을 실행하고 , 해당 조건문을 만족하면 , break 문 실행
+            if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
+                // 조건문 만족시 , 반복문 탈출
+                break;
+            } else {
+                // 매월 마지막 날짜 계산
+                elementLocalDate = cloneStartLocalDate.withDayOfMonth(cloneStartLocalDate.lengthOfMonth());
+                // 부정 논리 연산자를 이용한 , 매월 마지막 날짜 <= repeatEndLocalDate 조건을 만족하는 경우만 , repeatDateList add 진행
+                if (!elementLocalDate.isAfter(repeatEndLocalDate)) {
+                    // repeatDateList add
+                    repeatDateList.add(elementLocalDate);
+                }
+                // 매 달마다 계산 이기에 plus 1 month
+                cloneStartLocalDate = cloneStartLocalDate.plusMonths(1);
             }
         }
 

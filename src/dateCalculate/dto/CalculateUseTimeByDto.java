@@ -30,7 +30,8 @@ public class CalculateUseTimeByDto {
         // callingMethod 를 통한 repeatType 72 인 경우의 결과 반환값을 확인
         RetDto retDto72 = TimeLibrary.createTimeLibrary().callingMethod(reqDto72);
         // retDto 값 확인진행
-        // System.out.println("retDto72 => " + System.lineSeparator() + retDto72);
+        System.out.println("retDto72 => " + System.lineSeparator() + retDto72);
+        System.out.println("===========================================================================================");
 
         /** ========================================================================================================== */
         // 요청값 테스트 80 -> 매년 반복 설정시 케이스
