@@ -460,26 +460,20 @@ public class TimeLibrary {
                 if (thirtyDateList.size() == 30) {
                     break;
                 }
-                // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
-                int dayNumber = Integer.parseInt(day);
-                // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
-                int firstDayOfMonthNumberDay = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
-                // 해당 월의 1일이 몆주차 인지 계산 , EX) 2023.01.01은 첫 날이지만 , 해당 일이 첫 주가 아니다. -> return 값 0으로 반환됨
-                int checkFirstDayWeekNumber = startLocalDate.with(TemporalAdjusters.firstDayOfMonth()).get(WeekFields.ISO.weekOfMonth());
-                // 해당 월의 몇째주 인지 계산
-                int startLocalDateNumberWeek = startLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                // 요청값의 요일 <= 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
-                if (dayNumber <= firstDayOfMonthNumberDay || checkFirstDayWeekNumber != 1) {
-                    elementLocalDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
+                // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
+                if (Integer.parseInt(day) < getFirstDayOfMonthNumber(startLocalDate)) {
+                    elementLocalDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(getWeekNumber(startLocalDate),
+                            DayOfWeek.of(Integer.parseInt(day))));
                 } else {
-                    elementLocalDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek + 1, DayOfWeek.of(dayNumber)));
+                    elementLocalDate = startLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(getWeekNumber(startLocalDate) + 1,
+                            DayOfWeek.of(Integer.parseInt(day))));
                 }
                 // thirtyDateList add
                 thirtyDateList.add(elementLocalDate);
             } // end for
-            // 2주마다 반복하기에 , plus 1 week
+            // 2주마다 반복하기에 , plus 2 week
             startLocalDate = startLocalDate.plusWeeks(1);
-        }
+        } // end while
 
         // 2번 반복문 -> 반복문을 통해 시작일자가 , 반복 종료일자까지만 루프문을 돔
         while (true) {
@@ -492,24 +486,18 @@ public class TimeLibrary {
                     if (cloneStartLocalDate.isAfter(repeatEndLocalDate)) {
                         break;
                     }
-                    // 해당 월의 첫날을 정수값으로 계산 EX ) 4 = 목요일 , 7 = 일요일
-                    int firstDayOfMonthNumberDay = cloneStartLocalDate.with(TemporalAdjusters.firstDayOfMonth()).getDayOfWeek().getValue();
-                    // repeatByDay -> day 값 추출 EX) 1 , 2 , 3 , 4
-                    int dayNumber = Integer.parseInt(day);
-                    // 해당 월의 1일이 몆주차 인지 계산 , EX) 2023.01.01은 첫 날이지만 , 해당 일이 첫 주가 아니다. -> return 값 0으로 반환됨
-                    int checkFirstDayWeekNumber = cloneStartLocalDate.with(TemporalAdjusters.firstDayOfMonth()).get(WeekFields.ISO.weekOfMonth());
-                    // 해당 월의 몇째주 인지 계산
-                    int startLocalDateNumberWeek = cloneStartLocalDate.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
-                    // 요청값의 요일 <= 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
-                    if (dayNumber <= firstDayOfMonthNumberDay || checkFirstDayWeekNumber != 1) {
-                        elementLocalDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek, DayOfWeek.of(dayNumber)));
+                    // 요청값의 요일 < 계산하고자 하는 월의 첫날 요일 -> 주차 계산이 달라짐
+                    if (Integer.parseInt(day) < getFirstDayOfMonthNumber(cloneStartLocalDate)) {
+                        elementLocalDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(getWeekNumber(cloneStartLocalDate),
+                                DayOfWeek.of(Integer.parseInt(day))));
                     } else {
-                        elementLocalDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(startLocalDateNumberWeek + 1, DayOfWeek.of(dayNumber)));
+                        elementLocalDate = cloneStartLocalDate.with(TemporalAdjusters.dayOfWeekInMonth(getWeekNumber(cloneStartLocalDate) + 1,
+                                DayOfWeek.of(Integer.parseInt(day))));
                     }
                     // repeatDateList add
                     repeatDateList.add(elementLocalDate);
                 } // end for
-                // 2주마다 반복하기에 , plus 1 week
+                // 2주마다 반복하기에 , plus 2 week
                 cloneStartLocalDate = cloneStartLocalDate.plusWeeks(1);
             }
         } // end while

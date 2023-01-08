@@ -45,10 +45,10 @@ public class CalculateUseTimeByDto {
         // System.out.println("reqDto40 => " + System.lineSeparator() + reqDto40);
 
         // callingMethod 를 통한 repeatType 40 인 경우의 결과 반환값을 확인
-        // RetDto retDto40 = TimeLibrary.createTimeLibrary().callingMethod(reqDto40);
+        RetDto retDto40 = TimeLibrary.createTimeLibrary().callingMethod(reqDto40);
         // retDto 값 확인진행
-        // System.out.println("retDto40 => " + System.lineSeparator() + retDto40);
-        // System.out.println("===========================================================================================");
+        System.out.println("retDto40 => " + System.lineSeparator() + retDto40);
+        System.out.println("===========================================================================================");
 
 
         /** 50 ========================================================================================================== */
@@ -59,13 +59,13 @@ public class CalculateUseTimeByDto {
         reqDto50.setRepeatByDay("1,2,5,6,7");
         reqDto50.setRepeatEndDay("20230205");
         reqDto50.setRepeatType("50");
-        System.out.println("reqDto50 => " + System.lineSeparator() + reqDto50);
+        // System.out.println("reqDto50 => " + System.lineSeparator() + reqDto50);
 
         // callingMethod 를 통한 repeatType 50 인 경우의 결과 반환값을 확인
-        RetDto retDto50 = TimeLibrary.createTimeLibrary().callingMethod(reqDto50);
+        // RetDto retDto50 = TimeLibrary.createTimeLibrary().callingMethod(reqDto50);
         // retDto 값 확인진행
-        System.out.println("retDto50 => " + System.lineSeparator() + retDto50);
-        System.out.println("===========================================================================================");
+        // System.out.println("retDto50 => " + System.lineSeparator() + retDto50);
+        // System.out.println("===========================================================================================");
 
         /** 60 ========================================================================================================== */
         // 요청값 테스트 60 -> 매월 X일 반복 지정 케이스
